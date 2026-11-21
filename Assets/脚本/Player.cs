@@ -9,8 +9,7 @@ public class Player : MonoBehaviour
 
     // Start is called before the first frame update
     public float speed;//角色速度设置
-
-    public Vector2 collidersize;
+    
     public GameObject flashlight;//手电筒组件
 
     public Light2D selflight;
@@ -20,12 +19,21 @@ public class Player : MonoBehaviour
     private SpriteRenderer sprite;
     
     private CapsuleCollider2D capsuleCollider;
+
+    public LayerMask whatIsGround;
+
+    private float slopecheckDistance = 0.5f;
+    private float hp = 2;
+
+    private Vector2 hitnormal;
+    private Vector2 collidersize;
     void Start()
     {
         rg = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         collidersize = capsuleCollider.size;
+        Debug.Log(collidersize);
     }
 
     // Update is called once per frame
@@ -36,9 +44,7 @@ public class Player : MonoBehaviour
         Vector2 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);//鼠标坐标
         Vector2 flashpos = new Vector2(flashlight.transform.position.x, flashlight.transform.position.y);//手电筒坐标
         float flashangle = Angle(mousepos, flashpos);//手电筒和鼠标形成的夹角
-        float mouseposx = mousepos.x - flashpos.x;
-        float mouseposy = mousepos.y - flashpos.y;
-        float flashditance = Mathf.Sqrt(mouseposx*mouseposx+mouseposy*mouseposy);
+        float flashditance = Vector2.Distance(mousepos,flashpos);
         selflight.pointLightInnerRadius = flashditance;
        flashlight.transform.rotation = Quaternion.Euler(0,0,flashangle);//手电筒跟随鼠标
         if (a > 0 || (flashangle < 90 && flashangle > -90))
@@ -49,7 +55,11 @@ public class Player : MonoBehaviour
         {
             sprite.flipX=false;
         }//角色翻转
+        SlopCheck();
+       
+       
     }
+    
     public float Angle(Vector2 a,Vector2 b)
     {
 
@@ -58,6 +68,28 @@ public class Player : MonoBehaviour
    
     private void SlopCheck()
     {
+        Vector2 checkPos = transform.position - new Vector3(0f,collidersize.y/2);
+        if (SlopCheckVertical(checkPos))
+        {
+            rg.velocity = rg.velocity -hitnormal*Vector2.Dot(rg.velocity,hitnormal);
+        }
+    }
+    private void SlopCheckHorizantal(Vector2 checkPos)
+    {
         
     }
+    private bool SlopCheckVertical(Vector2 checkPos) 
+    {
+       RaycastHit2D hit = Physics2D.Raycast(checkPos,Vector2.down,slopecheckDistance,whatIsGround);
+        if (hit)
+        {
+            hitnormal = hit.normal;
+           Vector2 slopdown = Vector2.Perpendicular(hit.normal);
+            float slopeangle = Vector2.Angle(hit.normal, Vector2.up);
+            Debug.DrawRay(hit.point,slopdown,Color.blue);
+            Debug.DrawRay(hit.point,hit.normal,Color.red);
+        }
+        return true;
+    }
+
 }
