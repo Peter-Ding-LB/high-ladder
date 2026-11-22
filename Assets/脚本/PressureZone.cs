@@ -13,6 +13,9 @@ public class PressureZone : MonoBehaviour
 
     public Light2D targetlight;
 
+    public GameObject player;
+
+
     private bool isstoped = false;
     public void Start()
     {
@@ -20,7 +23,7 @@ public class PressureZone : MonoBehaviour
     }
     public void Update()
     {
-        if (isstoped)
+        if (isstoped||Time.time< 1.0f)
         {
             return;
         }
@@ -37,6 +40,7 @@ public class PressureZone : MonoBehaviour
         {
             isPressed = true;
             Debug.Log("压力触发！");
+            Time.timeScale = 0;
         }
         if (other.CompareTag("Light"))
         {

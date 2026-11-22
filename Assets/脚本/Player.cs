@@ -9,8 +9,11 @@ public class Player : MonoBehaviour
 
     // Start is called before the first frame update
     public float speed;//角色速度设置
+    public float repairspeed;
     
     public GameObject flashlight;//手电筒组件
+
+    public GameTest gameui;
 
     public Light2D selflight;
 
@@ -91,5 +94,30 @@ public class Player : MonoBehaviour
         }
         return true;
     }
-
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.transform.tag == "Repair")
+        {
+            gameui.StartRead();
+            flashlight.gameObject.SetActive(false);
+        }
+    }
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.transform.tag =="Repair")
+        {
+            if (Input.GetKey(KeyCode.E))
+            {
+                gameui.ReadLine(repairspeed*Time.deltaTime);
+            }
+        }
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.transform.tag == "Repair")
+        {
+            gameui.FinishRead();
+            flashlight.gameObject.SetActive(true);
+        }
+    }
 }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - ground
   - Light
+  - Repair
   layers:
   - Default
   - TransparentFX

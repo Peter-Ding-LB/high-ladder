@@ -13,15 +13,17 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
-        if (target == null) return;
+        
+            if (target == null) return;
 
-        Vector3 targetPos = target.position + offset;
-        if (!initDone)
-        {
-            transform.position = targetPos;
-            initDone = true;
-            return;
-        }
-        transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed);
+            Vector3 targetPos = target.position + offset;
+            if (!initDone)
+            {
+                transform.position = targetPos;
+                initDone = true;
+                return;
+            }
+            transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed);
+        
     }
 }
