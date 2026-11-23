@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -10,13 +11,15 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     public float speed;//角色速度设置
     public float repairspeed;
-    
+    public float Jumppower;
+    public float offset;
+
     public GameObject flashlight;//手电筒组件
+    public GameObject elevator;
 
     public GameTest gameui;
-
     public Light2D selflight;
-
+    public CameraFollow camera;
     private Rigidbody2D rg;
     
     private SpriteRenderer sprite;
@@ -25,11 +28,13 @@ public class Player : MonoBehaviour
 
     public LayerMask whatIsGround;
 
+    public List<RepairTest> repairs;
     private float slopecheckDistance = 0.5f;
-    private float hp = 2;
 
+    private bool isground = false;
     private Vector2 hitnormal;
     private Vector2 collidersize;
+    private Vector2 dir;
     void Start()
     {
         rg = GetComponent<Rigidbody2D>();
@@ -43,7 +48,8 @@ public class Player : MonoBehaviour
     void Update()
     {
         float a = Input.GetAxis("Horizontal")*speed;
-        rg.velocity = new Vector2 (a, 0);//a和d键控制角色
+        dir = new Vector2(a, 0);
+        transform.Translate(dir*Time.deltaTime);//a和d键控制角色
         Vector2 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);//鼠标坐标
         Vector2 flashpos = new Vector2(flashlight.transform.position.x, flashlight.transform.position.y);//手电筒坐标
         float flashangle = Angle(mousepos, flashpos);//手电筒和鼠标形成的夹角
@@ -59,10 +65,13 @@ public class Player : MonoBehaviour
             sprite.flipX=false;
         }//角色翻转
         SlopCheck();
-       
+        if (Input.GetKeyDown(KeyCode.Space) && isground)
+        {
+            rg.AddForce(Vector2.up*Jumppower);
+        }
        
     }
-    
+
     public float Angle(Vector2 a,Vector2 b)
     {
 
@@ -74,13 +83,10 @@ public class Player : MonoBehaviour
         Vector2 checkPos = transform.position - new Vector3(0f,collidersize.y/2);
         if (SlopCheckVertical(checkPos))
         {
-            rg.velocity = rg.velocity -hitnormal*Vector2.Dot(rg.velocity,hitnormal);
+            dir = dir -hitnormal*Vector2.Dot(dir,hitnormal);
         }
     }
-    private void SlopCheckHorizantal(Vector2 checkPos)
-    {
-        
-    }
+    
     private bool SlopCheckVertical(Vector2 checkPos) 
     {
        RaycastHit2D hit = Physics2D.Raycast(checkPos,Vector2.down,slopecheckDistance,whatIsGround);
@@ -94,7 +100,8 @@ public class Player : MonoBehaviour
         }
         return true;
     }
-    private void OnCollisionEnter2D(Collision2D collision)
+
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.transform.tag == "Repair")
         {
@@ -102,22 +109,56 @@ public class Player : MonoBehaviour
             flashlight.gameObject.SetActive(false);
         }
     }
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.transform.tag =="Repair")
+        if (collision.transform.tag == "Repair")
         {
+            
             if (Input.GetKey(KeyCode.E))
             {
-                gameui.ReadLine(repairspeed*Time.deltaTime);
+                RepairTest target = collision.GetComponent<RepairTest>();
+                gameui.ReadLine(repairspeed * Time.deltaTime, target);
             }
         }
     }
-    private void OnCollisionExit2D(Collision2D collision)
+    private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.transform.tag == "Repair")
         {
             gameui.FinishRead();
             flashlight.gameObject.SetActive(true);
+        }
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "ground")
+        {
+            isground = true;
+        }
+    }
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "elevator")
+        {
+            camera.IsElevator(true);
+            elevator.transform.position += new Vector3(0, speed,0) * Time.deltaTime;
+        }
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "ground")
+        {
+            isground = false;
+        }
+    }
+    public void Repair(RepairTest repair)
+    {
+        repairs.Remove(repair);
+        if (repairs.Count == 0)
+        {
+            Vector2 finishline = new Vector2(-4.9033f,15.69f);
+            elevator.transform.position = Vector2.Lerp(transform.position,finishline,offset);
+            //Time.timeScale = 0;
         }
     }
 }

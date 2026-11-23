@@ -23,6 +23,8 @@ public class PressureZone : MonoBehaviour
     }
     public void Update()
     {
+        float dir = Vector2.Distance(player.transform.position,transform.position);
+        Debug.Log(dir);
         if (isstoped||Time.time< 1.0f)
         {
             return;

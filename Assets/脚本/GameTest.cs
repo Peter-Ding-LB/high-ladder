@@ -12,7 +12,8 @@ public class GameTest : MonoBehaviour
 
     public Slider press;
     public Slider repair;
-
+    
+    public Collider2D presszone2;
     private float playerpos;
     private float presspos;  
     private float b = 0;
@@ -25,7 +26,7 @@ public class GameTest : MonoBehaviour
     void Update()
     {
         playerpos =  player.transform.position.y - player.transform.localScale.y/2 ;
-        presspos = presszone.transform.position.y + presszone.transform.localScale.y/2;
+        presspos = presszone.transform.position.y + presszone2.bounds.size.y/2;
         GameStart();
     }
     public void GameStart()
@@ -38,21 +39,23 @@ public class GameTest : MonoBehaviour
     {
         repair.gameObject.SetActive(true);
     }
-    public void ReadLine(float a)
+    public void ReadLine(float a, RepairTest target)
     {
         b += a;
         repair.value = b;
         if (repair.value == repair.maxValue)
         {
-            repairpoint.Dead();
+            repair.gameObject.SetActive(false);
+            target.Dead();
         }
         
     }
     public void FinishRead()
     {
+       
         repair.value = 0;
         b = 0;
-        repair.gameObject.SetActive(false);
+        
         
     }
 }

@@ -10,10 +10,13 @@ public class CameraFollow : MonoBehaviour
     public float smoothSpeed = 0.08f;
     public Vector3 offset;
     private bool initDone;
-
+    private bool elevator =false;
     void LateUpdate()
     {
-        
+        if (elevator) 
+        {
+            return; 
+        }
             if (target == null) return;
 
             Vector3 targetPos = target.position + offset;
@@ -24,6 +27,18 @@ public class CameraFollow : MonoBehaviour
                 return;
             }
             transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed);
+        
+    }
+    public void IsElevator(bool iselevator)
+    {
+        if (iselevator)
+        {
+            elevator = true;
+        }
+        else
+        {
+            elevator = false;
+        }
         
     }
 }
