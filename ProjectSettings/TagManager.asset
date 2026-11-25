@@ -8,6 +8,9 @@ TagManager:
   - Light
   - Repair
   - elevator
+  - Door
+  - Exit
+  - LightProp
   layers:
   - Default
   - TransparentFX

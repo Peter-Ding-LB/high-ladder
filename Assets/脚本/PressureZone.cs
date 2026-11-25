@@ -16,7 +16,7 @@ public class PressureZone : MonoBehaviour
     public GameObject player;
 
 
-    private bool isstoped = false;
+    private bool isstoped = true;
     public void Start()
     {
         
@@ -24,7 +24,7 @@ public class PressureZone : MonoBehaviour
     public void Update()
     {
         float dir = Vector2.Distance(player.transform.position,transform.position);
-        Debug.Log(dir);
+        //Debug.Log(dir);
         if (isstoped||Time.time< 1.0f)
         {
             return;
@@ -64,5 +64,13 @@ public class PressureZone : MonoBehaviour
             isstoped = false;
             Debug.Log("继续移动");
         }
+    }
+    public void Stop()
+    {
+        isstoped = true;
+    }
+    public void Eable()
+    {
+        isstoped =false;
     }
 }

@@ -32,7 +32,7 @@ public class GameTest : MonoBehaviour
     public void GameStart()
     {
         float distance = playerpos - presspos;
-        //Debug.Log(distance);
+        Debug.Log(distance);
         press.value = distance;
     }
     public void StartRead()
@@ -52,7 +52,7 @@ public class GameTest : MonoBehaviour
     }
     public void FinishRead()
     {
-       
+        repair.gameObject.SetActive(false);
         repair.value = 0;
         b = 0;
         

@@ -15,11 +15,20 @@ public class Player : MonoBehaviour
     public float offset;
 
     public GameObject flashlight;//手电筒组件
-    public GameObject elevator;
+    public GameObject Door;
+    public GameObject Exit;
+    public GameObject props;
+
+    public Animator playeranimator;
+
+    public Sprite repairsprite;
+    
 
     public GameTest gameui;
     public Light2D selflight;
-    public CameraFollow camera;
+    public CameraFollow cameras;
+    public PressureZone pressure;
+
     private Rigidbody2D rg;
     
     private SpriteRenderer sprite;
@@ -52,11 +61,11 @@ public class Player : MonoBehaviour
         transform.Translate(dir*Time.deltaTime);//a和d键控制角色
         Vector2 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);//鼠标坐标
         Vector2 flashpos = new Vector2(flashlight.transform.position.x, flashlight.transform.position.y);//手电筒坐标
-        float flashangle = Angle(mousepos, flashpos);//手电筒和鼠标形成的夹角
+        float flashangle = Angle(flashpos,mousepos);//手电筒和鼠标形成的夹角
         float flashditance = Vector2.Distance(mousepos,flashpos);
         selflight.pointLightInnerRadius = flashditance;
-       flashlight.transform.rotation = Quaternion.Euler(0,0,flashangle);//手电筒跟随鼠标
-        if (a > 0 || (flashangle < 90 && flashangle > -90))
+       flashlight.transform.rotation = Quaternion.Euler(0,0,flashangle+90);//手电筒跟随鼠标
+        if (a > 0 || (flashangle > 90 ||flashangle < -90))
         {
             sprite.flipX = true;
          }
@@ -68,14 +77,30 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && isground)
         {
             rg.AddForce(Vector2.up*Jumppower);
+            
         }
-       
+        if (a!=0)
+        {
+            playeranimator.SetBool("Walk",true);
+        }
+        if (a==0)
+        {
+            playeranimator.SetBool("Walk", false);
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            playeranimator.SetBool("Jump", true);
+        }
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            playeranimator.SetBool("Jump", false);
+        }
     }
 
     public float Angle(Vector2 a,Vector2 b)
     {
 
-        return Mathf.Atan2(a.y-b.y,a.x-b.x)*Mathf.Rad2Deg;//计算夹角的方法
+        return Mathf.Atan2( a.y-b.y, a.x - b.x) *Mathf.Rad2Deg;//计算夹角的方法
     }
    
     private void SlopCheck()
@@ -103,22 +128,26 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.transform.tag == "Repair")
+        if (collision.transform.tag == "LightProp")
         {
-            gameui.StartRead();
-            flashlight.gameObject.SetActive(false);
+            flashlight.gameObject.SetActive(true);
+            pressure.Eable();
+            Destroy(props.gameObject);
         }
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.transform.tag == "Repair")
         {
-            
+            gameui.StartRead();
+            flashlight.gameObject.SetActive(false);
             if (Input.GetKey(KeyCode.E))
             {
+                sprite.sprite = repairsprite;
                 RepairTest target = collision.GetComponent<RepairTest>();
                 gameui.ReadLine(repairspeed * Time.deltaTime, target);
             }
+           
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
@@ -128,21 +157,28 @@ public class Player : MonoBehaviour
             gameui.FinishRead();
             flashlight.gameObject.SetActive(true);
         }
+        if (collision.gameObject.tag == "Exit")
+        {
+            cameras.IsElevator(true);
+            pressure.Stop();
+        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
+    {
+        
+    }
+    private void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "ground")
         {
             isground = true;
         }
-    }
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "elevator")
+        if (collision.transform.tag == "Door")
         {
-            camera.IsElevator(true);
-            elevator.transform.position += new Vector3(0, speed,0) * Time.deltaTime;
+            transform.position = Exit.transform.position;
+           
         }
+
     }
     private void OnCollisionExit2D(Collision2D collision)
     {
@@ -156,9 +192,7 @@ public class Player : MonoBehaviour
         repairs.Remove(repair);
         if (repairs.Count == 0)
         {
-            Vector2 finishline = new Vector2(-4.9033f,15.69f);
-            elevator.transform.position = Vector2.Lerp(transform.position,finishline,offset);
-            //Time.timeScale = 0;
+            Door.gameObject.SetActive(true);
         }
     }
 }
